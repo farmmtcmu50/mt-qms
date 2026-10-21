@@ -1,0 +1,49 @@
+/* Design tokens ของ MT-QMS (CLAUDE.md "Design system") — ห้าม hard-code hex ใน component */
+:root {
+  --brand-navy: #053d70;
+  --brand-navy-hover: #032b50;
+  --brand-sky: #27aae1; /* ตกแต่งเท่านั้น ห้ามวางตัวอักษรขาวทับ */
+  --brand-sky-strong: #0b6e99;
+
+  --ink: #0f1e30;
+  --ink-2: #33435a;
+  --muted: #556476;
+  --muted-2: #697889;
+
+  --surface: #ffffff;
+  --canvas: #f3f6f9;
+  --surface-sunken: #f7fafc;
+  --chip-neutral: #edf2f6;
+  --track: #e3eaf1;
+
+  --border: #dce4ec;
+  --border-input: #c8d3de;
+  --border-soft: #edf2f6;
+  --border-dashed: #9db2c6;
+
+  --good-bg: #cfebdf;
+  --good-fg: #0a4a40;
+  --good-soft: #eef5f2;
+  --fair-bg: #e9f0d2;
+  --fair-fg: #3d4a12;
+  --warn-bg: #fbe2be;
+  --warn-fg: #7a3f02;
+  --warn-soft: #fff8ec;
+  --warn-line: #b4620a;
+  --crit-bg: #f6cfcb;
+  --crit-fg: #8a1c14;
+  --crit-text: #9b1c1c;
+  --badge-bg: #f2b544;
+  --badge-fg: #2b1a00;
+  --avatar-bg: #e6f4fb;
+
+  --font-sans: 'IBM Plex Sans Thai', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-chip: 999px;
+  --tap: 44px;
+  --tap-2: 40px;
+  --sidebar-w: 248px;
+}
