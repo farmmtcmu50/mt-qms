@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แบบตรวจประเมิน Internal audit</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>
+body{margin:0;background:#F3F6F9}
+a{color:#053D70}a:hover{color:#032B50}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 100vh; background: #F3F6F9; color: #0F1E30; font-family: 'IBM Plex Sans Thai', system-ui, sans-serif;">
+  <div style="flex: 1 1 248px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #DCE4EC;">
+    <dc-import name="Sidebar" active="assessment" hint-size="248px,1040px"></dc-import>
+  </div>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px;">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-end;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #556476;">IA-2569-02 · แม่แบบ MOPH90 (Checklist 8.2.4)</span>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700;">ตรวจติดตามภายใน · ศูนย์แล็บเมดิคอลเทรนด์ (บ่อสร้าง)</h1>
+        <span style="font-size: 14px; color: #556476;">ผู้ตรวจนำ: [ชื่อผู้ตรวจ] · วันที่ตรวจ 7 ต.ค. 2569 · <span style="color: #0A4A40; font-weight: 600;">✓ ไม่ได้รับผิดชอบพื้นที่ที่ตรวจ (ข้อ 89)</span></span>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" style="height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #C8D3DE; background: #FFFFFF; color: #0F1E30; font-family: inherit; font-size: 14px;">ส่งออก Checklist 8.2.4</button>
+        <button type="button" style="height: 44px; padding: 0 18px; border-radius: 8px; border: none; background: #053D70; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600;">สรุปผลและรายงานผู้บริหาร</button>
+      </div>
+    </header>
+
+    <section aria-label="ความคืบหน้า" style="background: #FFFFFF; border: 1px solid #DCE4EC; border-radius: 12px; padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+      <div style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 13px; color: #556476;">ประเมินแล้ว {{doneCount}} / 90 ข้อ</span>
+        <div style="height: 8px; background: #E3EAF1; border-radius: 999px; overflow: hidden;"><div style="{{progressStyle}}"></div></div>
+      </div>
+      <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px;">
+        <span><strong style="font-size: 20px; color: #0A4A40;">{{c.NONC}}</strong> No NC</span>
+        <span><strong style="font-size: 20px; color: #8A1C14;">{{c.NC}}</strong> NC</span>
+        <span><strong style="font-size: 20px; color: #7A3F02;">{{c.OBS}}</strong> Obs</span>
+        <span><strong style="font-size: 20px; color: #556476;">{{c.NA}}</strong> N/A</span>
+      </div>
+    </section>
+
+    <div role="group" aria-label="กรองตามหมวด" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <sc-for list="{{chips}}" as="ch" hint-placeholder-count="12">
+        <button type="button" style="{{ch.style}}">{{ch.label}}</button>
+      </sc-for>
+    </div>
+
+    <section aria-labelledby="sec2" style="background: #FFFFFF; border: 1px solid #DCE4EC; border-radius: 12px; overflow: hidden;">
+      <div style="padding: 16px 20px; border-bottom: 1px solid #DCE4EC; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <h2 id="sec2" style="margin: 0; font-size: 17px; font-weight: 600;">หมวด 2 · ระบบเอกสารคุณภาพ (ข้อ 6–14)</h2>
+        <span style="font-size: 13px; color: #556476;">ผลบันทึกอัตโนมัติ · NC/Obs สร้างใบ CAR ให้ทันที</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; min-width: 980px; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: #F3F6F9; text-align: left;">
+              <th scope="col" style="padding: 10px 16px; width: 48px; font-weight: 600; color: #556476;">ข้อ</th>
+              <th scope="col" style="padding: 10px 8px; font-weight: 600; color: #556476;">ข้อกำหนด</th>
+              <th scope="col" style="padding: 10px 8px; width: 190px; font-weight: 600; color: #556476;">หลักฐานในระบบ</th>
+              <th scope="col" style="padding: 10px 8px; width: 260px; font-weight: 600; color: #556476;">ผลการตรวจ</th>
+              <th scope="col" style="padding: 10px 16px 10px 8px; width: 280px; font-weight: 600; color: #556476;">หลักฐานและรายละเอียดที่ตรวจพบ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+              <tr style="border-top: 1px solid #EDF2F6; vertical-align: top;">
+                <td style="padding: 14px 16px; font-family: 'IBM Plex Mono', monospace; font-weight: 500;">{{r.no}}</td>
+                <td style="padding: 14px 8px; line-height: 1.5;"><a href="Requirement.dc.html" style="color: #0F1E30; text-decoration: none; font-weight: 500;">{{r.text}}</a></td>
+                <td style="padding: 14px 8px;"><span style="{{r.evStyle}}">{{r.ev}}</span></td>
+                <td style="padding: 12px 8px;">
+                  <div role="radiogroup" aria-label="ผลการตรวจข้อ {{r.no}}" style="display: inline-flex; border: 1px solid #C8D3DE; border-radius: 8px; overflow: hidden;">
+                    <sc-for list="{{r.opts}}" as="o" hint-placeholder-count="4">
+                      <button type="button" role="radio" aria-checked="{{o.checked}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+                    </sc-for>
+                  </div>
+                </td>
+                <td style="padding: 12px 16px 12px 8px;">
+                  <label style="position: absolute; width: 1px; height: 1px; overflow: hidden;" for="{{r.fid}}">รายละเอียดข้อ {{r.no}}</label>
+                  <textarea id="{{r.fid}}" rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #C8D3DE; border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 13px; resize: vertical;">{{r.finding}}</textarea>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = (this.state && this.state.res) || { '6': 'OBS', '7': 'NONC', '8': 'NC', '9': 'NONC', '10': 'NONC', '11': '' };
+    const items = [
+      ['6', 'มีระบบควบคุมเอกสารที่จัดทำภายในและเอกสารจากภายนอกที่ใช้ในระบบคุณภาพทั้งหมด', '7/9 เกณฑ์', 'warn', 'วิธีปฏิบัติยังไม่ครอบคลุมการเข้าถึงโดยบุคคลภายนอก (ขั้นตอนที่ 8)'],
+      ['7', 'มีการแจกจ่ายเอกสารให้ผู้เกี่ยวข้อง และมีบัญชีรายชื่อเอกสาร (Master list)', 'ครบ 2/2', 'ok', 'ทะเบียนแจกจ่าย FM-QA-003 ครบทุกจุดใช้งาน'],
+      ['8', 'เอกสารคุณภาพต้องได้รับการทบทวน', '0/1 · หมดอายุ', 'bad', 'WI 4 ฉบับไม่มีบันทึกทบทวนในรอบ 12 เดือน'],
+      ['9', 'เอกสารคุณภาพที่ยกเลิกต้องชี้บ่ง และเก็บฉบับล่าสุดไว้ไม่น้อยกว่า 4 ปี', 'ครบ 2/2', 'ok', 'ชี้บ่ง "ยกเลิก" ชัดเจน เก็บในตู้แยก'],
+      ['10', 'การเก็บรักษาเอกสารคุณภาพ', 'ครบ 1/1', 'ok', ''],
+      ['11', 'มีแนวทางควบคุมบันทึก (รวมบันทึกอิเล็กทรอนิกส์)', '3/4 เกณฑ์', 'warn', '']
+    ];
+    const opts = [['NONC', 'No NC', '#CFEBDF', '#0A4A40'], ['NC', 'NC', '#F6CFCB', '#8A1C14'], ['OBS', 'Obs', '#FBE2BE', '#7A3F02'], ['NA', 'N/A', '#E3EAF1', '#33435A']];
+    const evColors = { ok: 'background: #EEF5F2; color: #0A4A40;', warn: 'background: #FFF4E2; color: #7A3F02;', bad: 'background: #FCEBE9; color: #8A1C14;' };
+    const counts = { NONC: 31, NC: 2, OBS: 3, NA: 2 };
+    Object.keys(st).forEach((k) => { if (st[k]) counts[st[k]] += 1; });
+    const done = counts.NONC + counts.NC + counts.OBS + counts.NA;
+    const chipNames = ['ทั้งหมด', '1 องค์กร', '2 เอกสาร', '3 บุคลากร', '4 สถานที่', '5 จัดซื้อ', '6 เครื่องมือ', '7 กระบวนการ', '8 ประกันคุณภาพ', '9 ความปลอดภัย', '10 เหตุการณ์', '11 พัฒนา', '12 ประเมินผล'];
+    return {
+      c: counts,
+      doneCount: done,
+      progressStyle: 'height: 100%; background: #053D70; width: ' + Math.round(done / 90 * 100) + '%;',
+      chips: chipNames.map((n, i) => ({ label: n, style: 'min-height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 13px; cursor: pointer; ' + (i === 2 ? 'border: 1px solid #053D70; background: #053D70; color: #FFFFFF; font-weight: 600;' : 'border: 1px solid #C8D3DE; background: #FFFFFF; color: #33435A;') })),
+      rows: items.map((it) => ({
+        no: it[0], text: it[1], ev: it[2], finding: it[4], fid: 'f' + it[0],
+        evStyle: 'display: inline-block; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 3px 8px; ' + evColors[it[3]],
+        opts: opts.map((o, j) => {
+          const on = st[it[0]] === o[0];
+          return {
+            label: o[1], checked: on ? 'true' : 'false',
+            pick: () => this.setState({ res: { ...st, [it[0]]: o[0] } }),
+            style: 'min-height: 40px; min-width: 60px; padding: 0 10px; border: none; font-family: inherit; font-size: 13px; cursor: pointer; ' + (j > 0 ? 'border-left: 1px solid #C8D3DE; ' : '') + (on ? 'background: ' + o[2] + '; color: ' + o[3] + '; font-weight: 700;' : 'background: #FFFFFF; color: #33435A;')
+          };
+        })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

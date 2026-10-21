@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ปฏิทินงานตามรอบ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>
+body{margin:0;background:#F3F6F9}
+a{color:#053D70}a:hover{color:#032B50}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 100vh; background: #F3F6F9; color: #0F1E30; font-family: 'IBM Plex Sans Thai', system-ui, sans-serif;">
+  <div style="flex: 1 1 248px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #DCE4EC;">
+    <dc-import name="Sidebar" active="calendar" hint-size="248px,1040px"></dc-import>
+  </div>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px;">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-end;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700;">ปฏิทินงานตามรอบ</h1>
+        <span style="font-size: 14px; color: #556476;">สร้างอัตโนมัติจาก 14 กฎความถี่ตามมาตรฐาน · แจ้งเตือนทาง LINE / อีเมลทุก 07:00 น.</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" aria-label="เดือนก่อน" style="width: 44px; height: 44px; border-radius: 8px; border: 1px solid #C8D3DE; background: #FFFFFF; font-size: 18px; color: #0F1E30;">‹</button>
+        <span style="font-size: 18px; font-weight: 600; min-width: 150px; text-align: center;">ตุลาคม 2569</span>
+        <button type="button" aria-label="เดือนถัดไป" style="width: 44px; height: 44px; border-radius: 8px; border: 1px solid #C8D3DE; background: #FFFFFF; font-size: 18px; color: #0F1E30;">›</button>
+      </div>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <section aria-label="ปฏิทินเดือนตุลาคม 2569" style="flex: 999 1 640px; min-width: 0; background: #FFFFFF; border: 1px solid #DCE4EC; border-radius: 12px; padding: 16px; overflow-x: auto;">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; min-width: 700px;">
+          <sc-for list="{{dows}}" as="d" hint-placeholder-count="7">
+            <div style="font-size: 12px; font-weight: 600; color: #556476; padding: 4px 8px;">{{d}}</div>
+          </sc-for>
+          <sc-for list="{{cells}}" as="c" hint-placeholder-count="35">
+            <div style="{{c.style}}">
+              <span style="{{c.numStyle}}">{{c.day}}</span>
+              <sc-for list="{{c.events}}" as="e" hint-placeholder-count="1">
+                <span style="{{e.style}}">{{e.label}}</span>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #33435A; padding: 14px 4px 0;">
+          <span style="display: inline-flex; gap: 6px; align-items: center;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #053D70;"></span>สอบเทียบ / เครื่องมือ</span>
+          <span style="display: inline-flex; gap: 6px; align-items: center;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #0B6E99;"></span>EQA / คุณภาพ</span>
+          <span style="display: inline-flex; gap: 6px; align-items: center;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #B4620A;"></span>เอกสาร / บุคลากร</span>
+          <span style="display: inline-flex; gap: 6px; align-items: center;"><span style="width: 10px; height: 10px; border-radius: 3px; background: #B42318;"></span>เลยกำหนด</span>
+        </div>
+      </section>
+
+      <aside style="flex: 1 1 320px; min-width: 0; background: #FFFFFF; border: 1px solid #DCE4EC; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 4px;">
+        <h2 style="margin: 0 0 8px; font-size: 16px; font-weight: 600;">ครบกำหนดใน 30 วัน</h2>
+        <sc-for list="{{tasks}}" as="t" hint-placeholder-count="7">
+          <div style="display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid #EDF2F6; align-items: flex-start;">
+            <span style="{{t.dateStyle}}">{{t.date}}</span>
+            <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0;">
+              <span style="font-size: 14px; font-weight: 500;">{{t.title}}</span>
+              <span style="font-size: 12px; color: #556476;">ข้อ {{t.item}} · {{t.branch}} · {{t.owner}}</span>
+            </span>
+            <button type="button" style="flex: none; height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C8D3DE; background: #FFFFFF; font-family: inherit; font-size: 12px; color: #0F1E30;">ทำแล้ว + แนบ</button>
+          </div>
+        </sc-for>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const colors = { cal: '#053D70', qa: '#0B6E99', doc: '#B4620A', late: '#B42318' };
+    const ev = {
+      3: [['late', 'สอบเทียบปิเปต · พะเยา']],
+      7: [['qa', 'IA-2569-02 บ่อสร้าง']],
+      9: [['cal', 'สอบเทียบ Centrifuge #2']],
+      12: [['doc', 'ทบทวน WI 4 ฉบับ']],
+      14: [['qa', 'ส่งผล EQA เคมีคลินิก']],
+      16: [['doc', 'ต่อใบประกอบวิชาชีพ']],
+      20: [['cal', 'PM เครื่อง CBC']],
+      21: [['qa', 'เปรียบเทียบผลระหว่างสาขา']],
+      25: [['qa', 'ส่งผล EQA ภูมิคุ้มกัน']],
+      28: [['doc', 'ประเมิน Competency']],
+      30: [['cal', 'สอบเทียบเทอร์โมมิเตอร์']]
+    };
+    const cells = [];
+    for (let i = 0; i < 35; i++) {
+      const day = i - 3;
+      const inMonth = day >= 1 && day <= 31;
+      const today = day === 7;
+      const list = inMonth && ev[day] ? ev[day] : [];
+      cells.push({
+        day: inMonth ? String(day) : '',
+        style: 'min-height: 104px; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box; ' + (inMonth ? 'background: #FFFFFF; border: 1px solid ' + (today ? '#053D70' : '#E3EAF1') + ';' : 'background: #F3F6F9; border: 1px solid transparent;'),
+        numStyle: 'font-size: 13px; font-weight: ' + (today ? '700' : '500') + '; ' + (today ? 'color: #FFFFFF; background: #053D70; border-radius: 999px; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;' : 'color: #33435A;'),
+        events: list.map((e) => ({ label: e[1], style: 'font-size: 11.5px; line-height: 1.35; color: #FFFFFF; background: ' + colors[e[0]] + '; border-radius: 5px; padding: 3px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' }))
+      });
+    }
+    const tasks = [
+      ['3 ต.ค.', 'สอบเทียบไมโครปิเปต 6 ตัว', '42', 'ม.พะเยา', '[นักเทคนิคการแพทย์]', true],
+      ['9 ต.ค.', 'สอบเทียบ Centrifuge #2', '42', 'บ่อสร้าง', '[นักเทคนิคการแพทย์]', false],
+      ['12 ต.ค.', 'ทบทวน WI ประจำปี 4 ฉบับ', '8', 'หางดง', '[หัวหน้าห้องปฏิบัติการ]', false],
+      ['14 ต.ค.', 'ส่งผล EQA เคมีคลินิก รอบ 3', '63', 'ทุกสาขา', '[นักเทคนิคการแพทย์]', false],
+      ['16 ต.ค.', 'ต่ออายุใบประกอบวิชาชีพ', '19', 'หางดง', '[ทนพ.]', false],
+      ['21 ต.ค.', 'เปรียบเทียบผลระหว่างเครื่อง/สาขา', '64', 'ทุกสาขา', '[ผู้จัดการคุณภาพ]', false],
+      ['28 ต.ค.', 'ประเมิน Competency ประจำปี', '18', 'หนองหอย', '[หัวหน้าห้องปฏิบัติการ]', false]
+    ];
+    return {
+      dows: ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'],
+      cells: cells,
+      tasks: tasks.map((t) => ({
+        date: t[0], title: t[1], item: t[2], branch: t[3], owner: t[4],
+        dateStyle: 'flex: none; width: 56px; font-size: 13px; font-weight: 700; color: ' + (t[5] ? '#B42318' : '#053D70') + ';'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>NC และ CAR</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>
+body{margin:0;background:#F3F6F9}
+a{color:#053D70}a:hover{color:#032B50}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 100vh; background: #F3F6F9; color: #0F1E30; font-family: 'IBM Plex Sans Thai', system-ui, sans-serif;">
+  <div style="flex: 1 1 248px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #DCE4EC;">
+    <dc-import name="Sidebar" active="nc" hint-size="248px,1040px"></dc-import>
+  </div>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px;">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: flex-end;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700;">NC / CAR</h1>
+        <span style="font-size: 14px; color: #556476;">บันทึก → แก้ไขเบื้องต้น → วิเคราะห์สาเหตุ → ดำเนินมาตรการ → ตรวจประสิทธิผล → ปิด</span>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" style="height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #C8D3DE; background: #FFFFFF; color: #0F1E30; font-family: inherit; font-size: 14px;">ส่งออก F 0715093</button>
+        <button type="button" style="height: 44px; padding: 0 18px; border-radius: 8px; border: none; background: #053D70; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600;">+ เปิด NC ใหม่</button>
+      </div>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label for="fb" style="font-size: 12px; color: #556476;">สาขา</label>
+        <select id="fb" style="height: 40px; min-width: 180px; border-radius: 8px; border: 1px solid #C8D3DE; padding: 0 10px; font-family: inherit; font-size: 14px; background: #FFFFFF;"><option>ทุกสาขา</option><option>บ่อสร้าง</option><option>หางดง</option><option>หนองหอย</option><option>ม.พะเยา</option></select>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label for="fs" style="font-size: 12px; color: #556476;">ที่มา</label>
+        <select id="fs" style="height: 40px; min-width: 180px; border-radius: 8px; border: 1px solid #C8D3DE; padding: 0 10px; font-family: inherit; font-size: 14px; background: #FFFFFF;"><option>ทุกที่มา</option><option>Internal audit</option><option>External audit</option><option>IQC / EQA</option><option>ข้อร้องเรียน</option><option>Safety audit</option></select>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label for="fc" style="font-size: 12px; color: #556476;">ประเภท</label>
+        <select id="fc" style="height: 40px; min-width: 180px; border-radius: 8px; border: 1px solid #C8D3DE; padding: 0 10px; font-family: inherit; font-size: 14px; background: #FFFFFF;"><option>C และ O</option><option>ข้อบกพร่อง (C)</option><option>ข้อสังเกต (O)</option></select>
+      </div>
+      <span style="margin-left: auto; font-size: 12px; font-weight: 600; color: #8A4B06; background: #FBE7C6; border-radius: 999px; padding: 2px 10px;">ข้อมูลตัวอย่าง</span>
+    </div>
+
+    <div style="overflow-x: auto; padding-bottom: 8px;">
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(220px, 1fr)); gap: 14px; min-width: 1360px;">
+        <sc-for list="{{cols}}" as="col" hint-placeholder-count="6">
+          <section style="background: #E8EEF4; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 560px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 4px 2px;">
+              <h2 style="margin: 0; font-size: 14px; font-weight: 600;">{{col.title}}</h2>
+              <span style="font-size: 12px; font-weight: 600; background: #FFFFFF; border-radius: 999px; padding: 1px 8px;">{{col.count}}</span>
+            </div>
+            <sc-for list="{{col.cards}}" as="k" hint-placeholder-count="2">
+              <article style="background: #FFFFFF; border: 1px solid #DCE4EC; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #556476;">{{k.no}}</span>
+                  <span style="{{k.catStyle}}">{{k.catLabel}}</span>
+                </div>
+                <span style="font-size: 14px; font-weight: 500; line-height: 1.45;">{{k.title}}</span>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px;">
+                  <span style="background: #EDF2F6; border-radius: 6px; padding: 2px 8px;">ข้อ {{k.item}}</span>
+                  <span style="background: #EDF2F6; border-radius: 6px; padding: 2px 8px;">{{k.branch}}</span>
+                  <span style="background: #EDF2F6; border-radius: 6px; padding: 2px 8px;">{{k.source}}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; border-top: 1px solid #EDF2F6; padding-top: 8px;">
+                  <span style="color: #556476;">{{k.owner}}</span>
+                  <span style="{{k.dueStyle}}">{{k.due}}</span>
+                </div>
+              </article>
+            </sc-for>
+          </section>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cards = [
+      ['OPEN', 'NC-2569-017', 'C', 'ผู้ตรวจภายใน 1 คนยังไม่มีหลักฐานการอบรม', '89', 'ทุกสาขา', 'Internal audit', '[ผู้จัดการคุณภาพ]', 'ครบ 20 ต.ค.', false],
+      ['OPEN', 'NC-2569-018', 'O', 'ป้ายทางออกฉุกเฉินชั้น 2 ไม่มีไฟส่องสว่าง', '68', 'หางดง', 'Safety audit', '[เจ้าหน้าที่ความปลอดภัย]', 'ครบ 25 ต.ค.', false],
+      ['CONTAINED', 'NC-2569-014', 'C', 'แผนสอบเทียบไมโครปิเปตไม่ครอบคลุมทุกเครื่อง', '42', 'ม.พะเยา', 'Internal audit', '[หัวหน้าห้องปฏิบัติการ]', 'เลยกำหนด 3 วัน', true],
+      ['CONTAINED', 'NC-2569-016', 'O', 'WI 4 ฉบับเลยรอบทบทวนประจำปี', '8', 'หางดง', 'Self-assessment', '[หัวหน้าห้องปฏิบัติการ]', 'ครบ 12 ต.ค.', false],
+      ['RCA', 'NC-2569-012', 'C', 'ไม่มีบันทึกวิเคราะห์สาเหตุของ NC จาก EQA รอบ 2', '81', 'หนองหอย', 'EQA', '[หัวหน้าห้องปฏิบัติการ]', 'เลยกำหนด 1 วัน', true],
+      ['ACTION', 'NC-2569-010', 'O', 'อุณหภูมิตู้เย็นน้ำยาออกนอกเกณฑ์ 2 วัน ไม่มีบันทึกการแก้ไข', '27', 'บ่อสร้าง', 'Internal audit', '[นักเทคนิคการแพทย์]', 'ครบ 15 ต.ค.', false],
+      ['ACTION', 'NC-2569-011', 'O', 'ใบคำขอส่งตรวจ B2B ขาดเวลาเก็บสิ่งส่งตรวจ', '49', 'บ่อสร้าง', 'ข้อร้องเรียน', '[ฝ่ายขาย B2B]', 'ครบ 18 ต.ค.', false],
+      ['VERIFY', 'NC-2569-008', 'C', 'ทะเบียนสารเคมีไม่มี SDS ครบทุกรายการ', '70', 'อณูชีววิทยา', 'Safety audit', '[ผู้จัดการคุณภาพ]', 'รอตรวจ', false],
+      ['CLOSED', 'NC-2569-005', 'O', 'คู่มือการให้บริการขาดหัวข้อระยะเวลารอผล', '45', 'ทุกสาขา', 'Self-assessment', 'ปิดโดย QM', 'ปิด 2 ต.ค.', false]
+    ];
+    const cols = [['OPEN', 'บันทึก NC'], ['CONTAINED', 'แก้ไขเบื้องต้น'], ['RCA', 'วิเคราะห์สาเหตุ'], ['ACTION', 'ดำเนินมาตรการ'], ['VERIFY', 'ตรวจประสิทธิผล'], ['CLOSED', 'ปิดแล้ว (30 วัน)']];
+    const toCard = (c) => ({
+      no: c[1], catLabel: c[2] === 'C' ? 'C · ข้อบกพร่อง' : 'O · ข้อสังเกต', title: c[3], item: c[4], branch: c[5], source: c[6], owner: c[7], due: c[8],
+      catStyle: 'font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 8px; ' + (c[2] === 'C' ? 'background: #F6CFCB; color: #8A1C14;' : 'background: #FBE2BE; color: #7A3F02;'),
+      dueStyle: 'font-weight: 600; color: ' + (c[9] ? '#9B1C1C' : '#33435A') + ';'
+    });
+    return {
+      cols: cols.map((col) => {
+        const list = cards.filter((c) => c[0] === col[0]).map(toCard);
+        return { title: col[1], count: list.length, cards: list };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
