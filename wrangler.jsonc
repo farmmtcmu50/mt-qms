@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mt-qms",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "qms.medicaltrend.stream", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "mt-qms-db", "database_id": "aebdb34c-6f1b-4e12-a44d-92718efcb68d", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [
+    { "binding": "DOCS", "bucket_name": "mt-qms-docs" },
+    { "binding": "EVIDENCE", "bucket_name": "mt-qms-evidence" },
+    { "binding": "BACKUP", "bucket_name": "mt-qms-backup" }
+  ],
+  "triggers": {
+    // 07:00 น. ทุกวัน และ 02:00 น. เช้าวันจันทร์ (เวลาไทย) — งาน cron เริ่มใช้ในระยะที่ 3
+    "crons": ["0 0 * * *", "0 19 * * SUN"]
+  },
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "https://medicaltrend.cloudflareaccess.com",
+    "APP_TZ": "Asia/Bangkok"
+  },
+  "observability": { "enabled": true }
+}

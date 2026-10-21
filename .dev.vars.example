@@ -1,0 +1,4 @@
+# คัดลอกเป็น .dev.vars สำหรับรันบนเครื่องเท่านั้น (ห้าม commit .dev.vars)
+ACCESS_AUD=dev-aud
+# อีเมลผู้ใช้จำลองตอน `wrangler dev` — ใช้ได้เฉพาะ request ที่มาจาก localhost
+DEV_AUTH_EMAIL=qm@example.test
