@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { todayBangkok } from '../lib/dates';
 import { branchFilter, branchScope, hasRole, inScope } from '../lib/rbac';
-import { itemStatus, readinessRows } from '../lib/readiness';
+import { ACTIVE_BRANCH_EVIDENCE, itemStatus, readinessRows } from '../lib/readiness';
 import { requireRole } from '../middleware/loadUser';
 import { WRITER_ROLES, type AppEnv } from '../types';
 
@@ -83,12 +83,12 @@ requirements.get('/requirements/:key', async (c) => {
        FROM evidence_links l
        JOIN evidence e ON e.id = l.evidence_id
        LEFT JOIN users u ON u.id = e.uploaded_by
-       WHERE l.requirement_id = ? AND e.deleted_at IS NULL AND ${bf.sql}
+       WHERE l.requirement_id = ? AND e.deleted_at IS NULL AND ${bf.sql} AND ${ACTIVE_BRANCH_EVIDENCE}
        ORDER BY e.uploaded_at DESC`,
     ).bind(today, req.id, ...bf.params).all(),
     c.env.DB.prepare(
       `SELECT s.branch_id, b.code AS branch_code, s.applicable, s.na_reason, s.owner_user_id, u.full_name AS owner_name
-       FROM req_branch_scope s JOIN branches b ON b.id = s.branch_id LEFT JOIN users u ON u.id = s.owner_user_id
+       FROM req_branch_scope s JOIN branches b ON b.id = s.branch_id AND b.is_active = 1 LEFT JOIN users u ON u.id = s.owner_user_id
        WHERE s.requirement_id = ? AND ${sbf.sql} ORDER BY b.rowid`,
     ).bind(req.id, ...sbf.params).all(),
     c.env.DB.prepare('SELECT code, title FROM req_sections WHERE code = ?').bind(req.section_code.split('.')[0]).first(),
@@ -126,7 +126,9 @@ requirements.patch('/requirements/:id/scope/:branchId', requireRole('QM'), async
 
   const req = await c.env.DB.prepare('SELECT id, item_no, na_allowed FROM requirements WHERE id = ?').bind(id).first<{ id: string; item_no: number; na_allowed: number }>();
   if (!req) return c.json({ error: 'not_found' }, 404);
-  const before = await c.env.DB.prepare('SELECT * FROM req_branch_scope WHERE requirement_id = ? AND branch_id = ?').bind(id, branchId).first<{
+  const before = await c.env.DB.prepare(
+    'SELECT s.* FROM req_branch_scope s JOIN branches b ON b.id = s.branch_id AND b.is_active = 1 WHERE s.requirement_id = ? AND s.branch_id = ?',
+  ).bind(id, branchId).first<{
     applicable: number; na_reason: string | null; owner_user_id: string | null;
   }>();
   if (!before) return c.json({ error: 'not_found' }, 404);

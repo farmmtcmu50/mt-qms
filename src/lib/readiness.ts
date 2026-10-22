@@ -2,6 +2,9 @@ import { branchFilter, type BranchScope } from './rbac';
 
 // ตรรกะเดียวกับ view v_requirement_readiness (spec หัวข้อ 5) แต่ใช้ "วันนี้" ตามเวลาไทยแทน date('now') ของ UTC
 
+/** หลักฐานกลาง หรือหลักฐานของสาขาที่ยังเปิดใช้งาน (สาขาที่ปิดชั่วคราวไม่แสดง แต่ข้อมูลยังเก็บไว้) */
+export const ACTIVE_BRANCH_EVIDENCE = '(e.branch_id IS NULL OR e.branch_id IN (SELECT id FROM branches WHERE is_active = 1))';
+
 export type ItemStatus = 'READY' | 'PARTIAL' | 'MISSING' | 'NA';
 
 export interface ReadinessRow {

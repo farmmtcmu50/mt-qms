@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { addDays, todayBangkok } from '../lib/dates';
 import { branchFilter, branchScope, inScope } from '../lib/rbac';
-import { readinessRows, summarize, topSection, type ReadinessRow } from '../lib/readiness';
+import { ACTIVE_BRANCH_EVIDENCE, readinessRows, summarize, topSection, type ReadinessRow } from '../lib/readiness';
 import type { AppEnv } from '../types';
 
 export const dashboard = new Hono<AppEnv>();
@@ -42,7 +42,7 @@ dashboard.get('/dashboard/overview', async (c) => {
             (SELECT GROUP_CONCAT(DISTINCT r.item_no) FROM evidence_links l JOIN requirements r ON r.id = l.requirement_id
               WHERE l.evidence_id = e.id) AS item_nos
      FROM evidence e
-     WHERE e.deleted_at IS NULL AND e.valid_until IS NOT NULL AND e.valid_until >= ? AND e.valid_until <= ? AND ${bf.sql}
+     WHERE e.deleted_at IS NULL AND e.valid_until IS NOT NULL AND e.valid_until >= ? AND e.valid_until <= ? AND ${bf.sql} AND ${ACTIVE_BRANCH_EVIDENCE}
      ORDER BY e.valid_until LIMIT 50`,
   ).bind(today, addDays(today, 30), ...bf.params).all();
   return c.json({ today, expiring });
