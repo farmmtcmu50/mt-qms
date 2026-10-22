@@ -10,8 +10,12 @@ export const U = {
   nobody: 'nobody@example.test',
 };
 
-/** ผู้ใช้ตัวอย่าง (ข้อมูลทดสอบเท่านั้น) */
-export async function seedUsers() {
+/**
+ * ผู้ใช้ตัวอย่าง (ข้อมูลทดสอบเท่านั้น)
+ * production เปิดเฉพาะ BSR (migration 0004) — test ทั่วไปเปิด RPK กลับเพื่อทดสอบการแยกสิทธิ์ข้ามสาขา
+ */
+export async function seedUsers({ reactivateRpk = true } = {}) {
+  if (reactivateRpk) await env.DB.prepare("UPDATE branches SET is_active = 1 WHERE id = 'br-RPK'").run();
   const rows: [string, string, string, string | null, string | null][] = [
     ['u-qm', U.qm, 'QM', null, null],
     ['u-top', U.top, 'TOP_MGMT', null, null],

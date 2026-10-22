@@ -24,9 +24,9 @@ describe('GET /requirements', () => {
     expect(Object.keys(items[0].branches)).toEqual(['br-BSR']);
   });
 
-  it('QM (all branches) sees all 5 branches', async () => {
+  it('QM (all branches) sees every active branch', async () => {
     const { items } = await (await api('/requirements', { as: U.qm })).json<{ items: { branches: Record<string, unknown> }[] }>();
-    expect(Object.keys(items[0].branches).sort()).toEqual(['br-BSR', 'br-IBL', 'br-MOL', 'br-RPK', 'br-UP']);
+    expect(Object.keys(items[0].branches).sort()).toEqual(['br-BSR', 'br-RPK']);
   });
 
   it('returns 403 when a user filters by a branch they do not hold', async () => {
