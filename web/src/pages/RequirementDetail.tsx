@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { FilePreview } from '../components/FilePreview';
 import { Card, StatusChip } from '../components/ui';
 import { api, errorText, fileUrl, type Criterion, type EvidenceItem, type RequirementDetail as Detail, type ScopeRow } from '../lib/api';
 import { BRANCH_SHORT, fileSize, thDate } from '../lib/format';
@@ -20,10 +21,13 @@ const MARK: Record<CritState, { mark: string; dot: string; text: string }> = {
 
 export function RequirementDetail() {
   const { itemNo = '' } = useParams();
-  const { branches, branchFilter } = useSession();
+  const { branches, branchFilter, hasRole } = useSession();
   const { data, error, reload } = useApi<Detail>(`/requirements/${itemNo}`);
   const [tab, setTab] = useState<string>('');
   const [preCrit, setPreCrit] = useState<string>('');
+  const [preview, setPreview] = useState<EvidenceItem | null>(null);
+  // ไฟล์ติดธง PII เปิดได้เฉพาะ QM / LAB_HEAD (API ตรวจซ้ำ)
+  const canOpen = (e: EvidenceItem) => !e.contains_pii || hasRole('QM', 'LAB_HEAD');
   const uploadRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -134,9 +138,16 @@ export function RequirementDetail() {
                   </div>
                   <div className="aside">
                     {items.map((e) => (
-                      <a key={e.id} className={`ev-chip${e.expired ? ' expired' : ''}`} href={fileUrl(e.id, true)} target="_blank" rel="noreferrer" title={e.title}>
+                      <button
+                        key={e.id}
+                        type="button"
+                        className={`ev-chip${e.expired ? ' expired' : ''}`}
+                        title={canOpen(e) ? `ดูเอกสาร: ${e.title}` : 'มีข้อมูลส่วนบุคคล เปิดได้เฉพาะ QM / หัวหน้าห้องปฏิบัติการ'}
+                        disabled={!canOpen(e)}
+                        onClick={() => setPreview(e)}
+                      >
                         {e.title}
-                      </a>
+                      </button>
                     ))}
                     {st !== 'ok' && canUpload && scope?.applicable && (
                       <button type="button" className="btn attach" onClick={() => attach(c.id)}>+ แนบหลักฐาน</button>
@@ -156,7 +167,8 @@ export function RequirementDetail() {
               <strong style={{ fontWeight: 600 }}>หมายเหตุ (ตามแนวทาง):</strong> {r.remark}
             </div>
           )}
-          <EvidenceList items={evidence} canDelete={canUpload} onChange={reload} requirementId={r.id} criteria={data.criteria} />
+          <EvidenceList items={evidence} canDelete={canUpload} onChange={reload} requirementId={r.id} criteria={data.criteria} canOpen={canOpen} onPreview={setPreview} />
+          {preview && <FilePreview item={preview} onClose={() => setPreview(null)} />}
         </Card>
 
         <aside className="side">
@@ -186,8 +198,9 @@ export function RequirementDetail() {
   );
 }
 
-function EvidenceList({ items, canDelete, onChange, requirementId, criteria }: {
+function EvidenceList({ items, canDelete, onChange, requirementId, criteria, canOpen, onPreview }: {
   items: EvidenceItem[]; canDelete: boolean; onChange: () => void; requirementId: string; criteria: Criterion[];
+  canOpen: (e: EvidenceItem) => boolean; onPreview: (e: EvidenceItem) => void;
 }) {
   const [err, setErr] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -231,19 +244,23 @@ function EvidenceList({ items, canDelete, onChange, requirementId, criteria }: {
               ) : (
                 <tr key={rowKey(e)}>
                   <td>
-                    <a href={fileUrl(e.id)}>{e.title}</a>
+                    <button type="button" className="link-btn" disabled={!canOpen(e)} onClick={() => onPreview(e)}>{e.title}</button>
                     <div className="small muted">{fileSize(e.size_bytes)}{e.contains_pii ? ' · มีข้อมูลส่วนบุคคล' : ''}</div>
                   </td>
                   <td>{e.branch_id ? 'สาขานี้' : 'ทุกสาขา'}</td>
                   <td className={e.expired ? 'status-warn' : ''}>{e.valid_until ? thDate(e.valid_until) : '—'}</td>
                   <td>{thDate(e.uploaded_at)}<div className="small muted">{e.uploaded_by_name}</div></td>
                   <td>
-                    {canDelete && (
-                      <div className="inline" style={{ gap: 6, flexWrap: 'nowrap', justifyContent: 'flex-end' }}>
-                        <button type="button" className="btn secondary" onClick={() => setEditing(rowKey(e))}>แก้ไข</button>
-                        <button type="button" className="btn secondary danger" onClick={() => remove(e)}>ยกเลิก</button>
-                      </div>
-                    )}
+                    <div className="inline" style={{ gap: 6, flexWrap: 'nowrap', justifyContent: 'flex-end' }}>
+                      <button type="button" className="btn secondary" disabled={!canOpen(e)} onClick={() => onPreview(e)}>ดูเอกสาร</button>
+                      {canOpen(e) && <a className="btn secondary" href={fileUrl(e.id)}>ดาวน์โหลด</a>}
+                      {canDelete && (
+                        <>
+                          <button type="button" className="btn secondary" onClick={() => setEditing(rowKey(e))}>แก้ไข</button>
+                          <button type="button" className="btn secondary danger" onClick={() => remove(e)}>ยกเลิก</button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ),
