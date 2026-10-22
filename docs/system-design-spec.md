@@ -468,7 +468,7 @@ REST + JSON ใต้ `/api/v1` ทุก endpoint ผ่าน middleware 3 ช
 | ข้อกำหนด | `GET /requirements?branch=&section=` · `GET /requirements/:id` (พร้อมเกณฑ์ย่อย + หลักฐาน + สถานะ) | ทุกคน |
 | ข้อกำหนด | `PATCH /requirements/:id/scope/:branchId` (applicable, N/A reason, owner) | QM |
 | เอกสาร | `GET /documents` · `POST /documents` · `POST /documents/:id/versions` · `POST /documents/:id/versions/:v/approve` · `POST /documents/:id/obsolete` | STAFF ขึ้นไป / อนุมัติ: LAB\_HEAD, QM |
-| หลักฐาน | `POST /evidence` (multipart) · `GET /files/:evidenceId` · `POST /evidence/:id/links` · `DELETE /evidence/:id` (soft) | STAFF ขึ้นไป; EXT\_AUDITOR อ่านอย่างเดียว |
+| หลักฐาน | `POST /evidence` (multipart) · `GET /files/:evidenceId` · `POST /evidence/:id/links` · `PATCH /evidence/:id` (ชื่อ, `valid_until`, `contains_pii`, ย้ายเกณฑ์ย่อยในข้อเดียวกัน — ตัวไฟล์แก้ไม่ได้, `retain_until` ไม่หดสั้นลง, เอาธง PII ออกได้เฉพาะ QM/LAB\_HEAD; เพิ่ม 22 ต.ค. 2569) · `DELETE /evidence/:id` (soft) | STAFF ขึ้นไป; EXT\_AUDITOR อ่านอย่างเดียว |
 | การประเมิน | `POST /assessments` (template, branch, kind) · `GET /assessments/:id` · `PUT /assessments/:id/items/:itemId` · `POST /assessments/:id/report` · `POST /assessments/:id/close` | INT\_AUDITOR, LAB\_HEAD (SELF), SAFETY |
 | NC/CAR | `GET /nc?status=&branch=` · `POST /nc` · `PATCH /nc/:id` · `POST /nc/:id/verify` · `POST /nc/:id/close` | เปิด: ทุกคน; verify/close: QM |
 | เครื่องมือ | `GET/POST /equipment` · `POST /equipment/:id/events` | STAFF ขึ้นไป |

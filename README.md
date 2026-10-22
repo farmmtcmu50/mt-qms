@@ -8,7 +8,7 @@
 - Seed 12 หมวด / 90 ข้อ / เกณฑ์ย่อย 183 รายการจาก PDF (`migrations/0002_seed_moph2568.sql`, สร้างด้วย `scripts/extract_moph2568.py`)
 - 5 สาขา + ขอบเขตข้อกำหนดรายสาขา (`migrations/0003_seed_branches.sql`)
 - API `/api/v1`: `me`, `branches`, `users`, `sections`, `requirements`, `requirements/:key`, `PATCH requirements/:id/scope/:branchId`,
-  `POST evidence`, `GET files/:id`, `POST evidence/:id/links`, `DELETE evidence/:id` (soft), `dashboard/readiness`, `dashboard/overview`, `audit-log`
+  `POST evidence`, `GET files/:id`, `POST evidence/:id/links`, `PATCH evidence/:id`, `DELETE evidence/:id` (soft), `dashboard/readiness`, `dashboard/overview`, `audit-log`
 - หน้าเว็บ: ภาพรวมความพร้อม (`/`), ข้อกำหนด 90 ข้อ (`/requirements`), รายละเอียดข้อ + อัปโหลด (`/requirements/:itemNo`), Audit log (`/audit-log`)
 
 ## รันบนเครื่อง
