@@ -35,7 +35,7 @@ export function Dashboard() {
 
       <section aria-label="ตัวชี้วัดหลัก" className="tiles">
         <StatTile
-          label={branchFilter ? `Readiness · ${branchById(branchFilter)?.name_th ?? ''}` : 'Readiness รวม (ทุกสาขา)'}
+          label={cols.length === 1 ? `Readiness · ${cols[0].name_th}` : 'Readiness รวม (ทุกสาขา)'}
           value={overall?.pct == null ? '—' : `${overall.pct}%`}
           tone="brand"
           foot={overall ? `หลักฐานครบ ${overall.ready} ÷ ที่ใช้ได้ (ไม่รวม N/A) ${overall.applicable} ${unit}` : 'ข้อที่หลักฐานครบ ÷ (90 − N/A)'}

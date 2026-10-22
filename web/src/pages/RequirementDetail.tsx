@@ -162,7 +162,7 @@ export function RequirementDetail() {
               branchId={tab}
               criteria={data.criteria}
               preCrit={preCrit}
-              allowShared={data.can.upload_branches === 'ALL'}
+              allowShared={data.can.upload_branches === 'ALL' && branches.length > 1}
               onDone={() => {
                 setPreCrit('');
                 reload();
