@@ -74,6 +74,17 @@ describe('GET /files/:evidenceId', () => {
     expect((await auditRows('evidence', ev.id)).map((a) => a.action)).toEqual(['CREATE', 'DOWNLOAD']);
   });
 
+  it('serves inline previews and logs them as DOWNLOAD with disposition inline', async () => {
+    const ev = await uploadOk(U.staffBsr, { branch_id: 'br-BSR', requirement_id: 'req-001' });
+    const res = await api(`/files/${ev.id}?inline=1`, { as: U.staffBsr });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-disposition')).toMatch(/^inline;/);
+    await res.arrayBuffer();
+    const log = (await auditRows('evidence', ev.id)).find((a) => a.action === 'DOWNLOAD')!;
+    expect(JSON.parse(log.after_json)).toMatchObject({ disposition: 'inline' });
+    expect((await api(`/files/${ev.id}?inline=1`, { as: U.staffRpk })).status).toBe(404);
+  });
+
   it('hides evidence of other branches (404)', async () => {
     const ev = await uploadOk(U.staffBsr, { branch_id: 'br-BSR', requirement_id: 'req-001' });
     expect((await api(`/files/${ev.id}`, { as: U.staffRpk })).status).toBe(404);

@@ -153,10 +153,11 @@ evidence.get('/files/:evidenceId', async (c) => {
 
   const obj = await c.env.EVIDENCE.get(ev.r2_key);
   if (!obj) return c.json({ error: 'file_missing' }, 404);
-  await c.get('audit').stmt('DOWNLOAD', 'evidence', ev.id, undefined, { r2_key: ev.r2_key, sha256: ev.sha256 }).run();
+  // เปิดดูในหน้าเว็บ (inline) ก็นับเป็นการเข้าถึงไฟล์ บันทึก DOWNLOAD พร้อมระบุ disposition
+  const disposition = c.req.query('inline') === '1' ? 'inline' : 'attachment';
+  await c.get('audit').stmt('DOWNLOAD', 'evidence', ev.id, undefined, { r2_key: ev.r2_key, sha256: ev.sha256, disposition }).run();
 
   const filename = decodeURIComponent(obj.customMetadata?.filename ?? `${ev.id}`);
-  const disposition = c.req.query('inline') === '1' ? 'inline' : 'attachment';
   return new Response(obj.body, {
     headers: {
       'Content-Type': ev.mime ?? 'application/octet-stream',
