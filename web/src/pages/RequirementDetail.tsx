@@ -47,8 +47,14 @@ export function RequirementDetail() {
 
   const attach = (critId: string) => {
     setPreCrit(critId);
-    uploadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    uploadRef.current?.querySelector<HTMLInputElement>('input[type=file]')?.focus();
+    const card = uploadRef.current;
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // ไฮไลต์ฟอร์มให้เห็นว่ากดแล้ว และเปิดหน้าต่างเลือกไฟล์ทันที (ต้องเรียกใน click handler)
+    card.classList.remove('flash');
+    void card.offsetWidth;
+    card.classList.add('flash');
+    card.querySelector<HTMLInputElement>('input[type=file]')?.click();
   };
 
   return (
@@ -298,7 +304,7 @@ function UploadCard(props: {
           <span style={{ fontWeight: 500 }}>{file ? file.name : 'ลากไฟล์มาวาง หรือคลิกเพื่อเลือก'}</span>
           <span className="small muted">PDF, JPG, PNG, XLSX, DOCX · ไม่เกิน 25 MB</span>
         </label>
-        <input id="up" ref={fileInput} type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <input id="up" ref={fileInput} type="file" className="visually-hidden" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         <div className="field">
           <label htmlFor="crit">ผูกกับเกณฑ์ย่อย</label>
           <select id="crit" className="select" value={crit} onChange={(e) => setCrit(e.target.value)}>
