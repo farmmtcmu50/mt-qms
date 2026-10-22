@@ -151,3 +151,5 @@ h3 { margin: 0; font-size: 16px; font-weight: 600; }
 .card.flash { animation: flash 1.2s ease-out; }
 @keyframes flash { 0% { box-shadow: 0 0 0 4px var(--brand-sky); } 100% { box-shadow: 0 0 0 0 transparent; } }
 @media (prefers-reduced-motion: reduce) { .card.flash { animation: none; outline: 2px solid var(--brand-sky); } }
+.edit-form { background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 16px; }
+.edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }

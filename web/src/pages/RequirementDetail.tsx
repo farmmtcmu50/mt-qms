@@ -156,7 +156,7 @@ export function RequirementDetail() {
               <strong style={{ fontWeight: 600 }}>หมายเหตุ (ตามแนวทาง):</strong> {r.remark}
             </div>
           )}
-          <EvidenceList items={evidence} canDelete={canUpload} onChange={reload} />
+          <EvidenceList items={evidence} canDelete={canUpload} onChange={reload} requirementId={r.id} criteria={data.criteria} />
         </Card>
 
         <aside className="side">
@@ -186,9 +186,13 @@ export function RequirementDetail() {
   );
 }
 
-function EvidenceList({ items, canDelete, onChange }: { items: EvidenceItem[]; canDelete: boolean; onChange: () => void }) {
+function EvidenceList({ items, canDelete, onChange, requirementId, criteria }: {
+  items: EvidenceItem[]; canDelete: boolean; onChange: () => void; requirementId: string; criteria: Criterion[];
+}) {
   const [err, setErr] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
   if (items.length === 0) return null;
+  const rowKey = (e: EvidenceItem) => `${e.id}:${e.criterion_id}`;
   const remove = async (e: EvidenceItem) => {
     if (!confirm(`ยกเลิกหลักฐาน "${e.title}"?\nไฟล์จะยังถูกเก็บไว้ตามระยะเก็บรักษา และบันทึกใน audit log`)) return;
     try {
@@ -208,22 +212,117 @@ function EvidenceList({ items, canDelete, onChange }: { items: EvidenceItem[]; c
             <tr><th>ชื่อหลักฐาน</th><th>ขอบเขต</th><th>ใช้ได้ถึง</th><th>อัปโหลด</th><th /></tr>
           </thead>
           <tbody>
-            {items.map((e) => (
-              <tr key={`${e.id}:${e.criterion_id}`}>
-                <td>
-                  <a href={fileUrl(e.id)}>{e.title}</a>
-                  <div className="small muted">{fileSize(e.size_bytes)}{e.contains_pii ? ' · มีข้อมูลส่วนบุคคล' : ''}</div>
-                </td>
-                <td>{e.branch_id ? 'สาขานี้' : 'ทุกสาขา'}</td>
-                <td className={e.expired ? 'status-warn' : ''}>{e.valid_until ? thDate(e.valid_until) : '—'}</td>
-                <td>{thDate(e.uploaded_at)}<div className="small muted">{e.uploaded_by_name}</div></td>
-                <td>{canDelete && <button type="button" className="btn secondary danger" onClick={() => remove(e)}>ยกเลิก</button>}</td>
-              </tr>
-            ))}
+            {items.map((e) =>
+              editing === rowKey(e) ? (
+                <tr key={rowKey(e)}>
+                  <td colSpan={5}>
+                    <EvidenceEditForm
+                      item={e}
+                      requirementId={requirementId}
+                      criteria={criteria}
+                      onCancel={() => setEditing(null)}
+                      onSaved={() => {
+                        setEditing(null);
+                        onChange();
+                      }}
+                    />
+                  </td>
+                </tr>
+              ) : (
+                <tr key={rowKey(e)}>
+                  <td>
+                    <a href={fileUrl(e.id)}>{e.title}</a>
+                    <div className="small muted">{fileSize(e.size_bytes)}{e.contains_pii ? ' · มีข้อมูลส่วนบุคคล' : ''}</div>
+                  </td>
+                  <td>{e.branch_id ? 'สาขานี้' : 'ทุกสาขา'}</td>
+                  <td className={e.expired ? 'status-warn' : ''}>{e.valid_until ? thDate(e.valid_until) : '—'}</td>
+                  <td>{thDate(e.uploaded_at)}<div className="small muted">{e.uploaded_by_name}</div></td>
+                  <td>
+                    {canDelete && (
+                      <div className="inline" style={{ gap: 6, flexWrap: 'nowrap', justifyContent: 'flex-end' }}>
+                        <button type="button" className="btn secondary" onClick={() => setEditing(rowKey(e))}>แก้ไข</button>
+                        <button type="button" className="btn secondary danger" onClick={() => remove(e)}>ยกเลิก</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ),
+            )}
           </tbody>
         </table>
       </div>
     </div>
+  );
+}
+
+function EvidenceEditForm({ item, requirementId, criteria, onCancel, onSaved }: {
+  item: EvidenceItem; requirementId: string; criteria: Criterion[]; onCancel: () => void; onSaved: () => void;
+}) {
+  const { hasRole } = useSession();
+  const [title, setTitle] = useState(item.title);
+  const [validUntil, setValidUntil] = useState(item.valid_until ?? '');
+  const [pii, setPii] = useState(item.contains_pii);
+  const [crit, setCrit] = useState(item.criterion_id ?? '');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  // เอาธงข้อมูลส่วนบุคคลออกได้เฉพาะ QM / หัวหน้าห้องปฏิบัติการ (API ตรวจซ้ำ)
+  const canUnflag = hasRole('QM', 'LAB_HEAD');
+
+  const save = async (ev: FormEvent) => {
+    ev.preventDefault();
+    const body: Record<string, unknown> = {};
+    if (title.trim() !== item.title) body.title = title.trim();
+    if ((validUntil || null) !== item.valid_until) body.valid_until = validUntil || null;
+    if (pii !== item.contains_pii) body.contains_pii = pii;
+    if ((crit || null) !== item.criterion_id) {
+      body.relink = { requirement_id: requirementId, from_criterion_id: item.criterion_id, to_criterion_id: crit || null };
+    }
+    if (Object.keys(body).length === 0) return onCancel();
+    setBusy(true);
+    setErr(null);
+    try {
+      await api(`/evidence/${item.id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+      onSaved();
+    } catch (x) {
+      setErr(errorText(x));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="stack edit-form" style={{ gap: 10 }} onSubmit={save} aria-label={`แก้ไขหลักฐาน ${item.title}`}>
+      <div className="edit-grid">
+        <div className="field">
+          <label htmlFor={`t-${item.id}`}>ชื่อหลักฐาน</label>
+          <input id={`t-${item.id}`} className="input" value={title} maxLength={200} required onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor={`v-${item.id}`}>ใช้ได้ถึงวันที่ (เว้นว่าง = ไม่มีวันหมดอายุ)</label>
+          <input id={`v-${item.id}`} type="date" className="input" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor={`c-${item.id}`}>ผูกกับเกณฑ์ย่อย</label>
+          <select id={`c-${item.id}`} className="select" value={crit} onChange={(e) => setCrit(e.target.value)}>
+            <option value="">ทั้งข้อ (ไม่ระบุเกณฑ์ย่อย)</option>
+            {criteria.map((c) => (
+              <option key={c.id} value={c.id}>({c.seq}) {c.text.split('\n')[0].slice(0, 80)}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <label className="check">
+        <input type="checkbox" checked={pii} disabled={item.contains_pii && !canUnflag} onChange={(e) => setPii(e.target.checked)} />
+        มีข้อมูลส่วนบุคคลของผู้ป่วย (ปิดชื่อ/HN แล้ว)
+        {item.contains_pii && !canUnflag && <span className="small muted">· เอาธงออกได้เฉพาะ QM / หัวหน้าห้องปฏิบัติการ</span>}
+      </label>
+      <p className="small muted" style={{ margin: 0 }}>ตัวไฟล์แก้ไขไม่ได้ ถ้าไฟล์ผิดให้อัปโหลดหลักฐานใหม่แล้วกด "ยกเลิก" ฉบับเดิม · ทุกการแก้บันทึกใน audit log</p>
+      {err && <div className="alert error">{err}</div>}
+      <div className="inline" style={{ gap: 8 }}>
+        <button type="submit" className="btn primary secondary" disabled={busy || !title.trim()}>{busy ? 'กำลังบันทึก…' : 'บันทึก'}</button>
+        <button type="button" className="btn secondary" onClick={onCancel}>ยกเลิกการแก้ไข</button>
+      </div>
+    </form>
   );
 }
 
