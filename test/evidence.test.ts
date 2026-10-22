@@ -130,3 +130,51 @@ describe('dashboard', () => {
     expect((await api('/dashboard/readiness?branch=br-RPK', { as: U.staffBsr })).status).toBe(403);
   });
 });
+
+describe('PATCH /evidence/:id', () => {
+  const patch = (id: string, as: string, json: unknown) => api(`/evidence/${id}`, { as, method: 'PATCH', json });
+
+  it('updates title and valid_until with before/after in audit_log; other branches get 404', async () => {
+    const ev = await uploadOk(U.staffBsr, { branch_id: 'br-BSR', requirement_id: 'req-001', criterion_id: 'crit-001-1', title: 'สพ7' });
+    expect((await patch(ev.id, U.staffRpk, { title: 'x' })).status).toBe(404);
+    const res = await patch(ev.id, U.staffBsr, { title: 'ใบอนุญาตประกอบกิจการสถานพยาบาล (สพ.7)', valid_until: '2099-12-31' });
+    expect(res.status).toBe(200);
+    const log = (await auditRows('evidence', ev.id)).find((a) => a.action === 'UPDATE')!;
+    expect(JSON.parse(log.before_json)).toMatchObject({ title: 'สพ7', valid_until: null });
+    expect(JSON.parse(log.after_json)).toMatchObject({ title: 'ใบอนุญาตประกอบกิจการสถานพยาบาล (สพ.7)', valid_until: '2099-12-31', retain_until: '2103-12-31' });
+  });
+
+  it('never shortens retain_until and expiring valid_until changes readiness', async () => {
+    const ev = await uploadOk(U.staffBsr, { branch_id: 'br-BSR', requirement_id: 'req-003', criterion_id: 'crit-003-1', valid_until: '2099-01-01' });
+    const r1 = await (await patch(ev.id, U.staffBsr, { valid_until: '2020-01-01' })).json<{ evidence: { retain_until: string } }>();
+    expect(r1.evidence.retain_until).toBe('2103-01-01');
+    const d = await (await api('/requirements/3', { as: U.staffBsr })).json<{ evidence: { id: string; expired: boolean }[] }>();
+    expect(d.evidence.find((e) => e.id === ev.id)?.expired).toBe(true);
+  });
+
+  it('lets anyone with write access flag PII but only QM / LAB_HEAD remove the flag', async () => {
+    const ev = await uploadOk(U.staffBsr, { branch_id: 'br-BSR', requirement_id: 'req-004' });
+    expect((await patch(ev.id, U.staffBsr, { contains_pii: true })).status).toBe(200);
+    expect((await patch(ev.id, U.staffBsr, { contains_pii: false })).status).toBe(403);
+    expect((await patch(ev.id, U.headBsr, { contains_pii: false })).status).toBe(200);
+  });
+
+  it('moves the link to another criterion of the same requirement only', async () => {
+    const ev = await uploadOk(U.staffBsr, { branch_id: 'br-BSR', requirement_id: 'req-006', criterion_id: 'crit-006-1' });
+    const move = (to: string | null) => patch(ev.id, U.staffBsr, { relink: { requirement_id: 'req-006', from_criterion_id: 'crit-006-1', to_criterion_id: to } });
+    expect((await move('crit-002-1')).status).toBe(422);
+    expect((await move('crit-006-8')).status).toBe(200);
+    const link = await env.DB.prepare('SELECT criterion_id FROM evidence_links WHERE evidence_id = ?').bind(ev.id).first<{ criterion_id: string }>();
+    expect(link?.criterion_id).toBe('crit-006-8');
+    const [log] = await auditRows('evidence_links', `${ev.id}:req-006`);
+    expect(JSON.parse(log.before_json)).toEqual({ criterion_id: 'crit-006-1' });
+    expect(JSON.parse(log.after_json)).toEqual({ criterion_id: 'crit-006-8' });
+  });
+
+  it('rejects empty edits and deleted evidence', async () => {
+    const ev = await uploadOk(U.staffBsr, { branch_id: 'br-BSR', requirement_id: 'req-005' });
+    expect((await patch(ev.id, U.staffBsr, {})).status).toBe(400);
+    await api(`/evidence/${ev.id}`, { as: U.staffBsr, method: 'DELETE' });
+    expect((await patch(ev.id, U.staffBsr, { title: 'x' })).status).toBe(404);
+  });
+});

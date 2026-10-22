@@ -191,6 +191,81 @@ evidence.post('/evidence/:id/links', async (c) => {
   return c.json({ link }, 201);
 });
 
+/**
+ * PATCH /evidence/:id — แก้ข้อมูลหลักฐาน (ตัวไฟล์เปลี่ยนไม่ได้ ต้องอัปโหลดเป็นหลักฐานใหม่)
+ * body: title?, valid_until? (null = ไม่มีวันหมดอายุ), contains_pii?,
+ *       relink? { requirement_id, from_criterion_id, to_criterion_id } ย้ายเกณฑ์ย่อยภายในข้อเดียวกัน
+ */
+evidence.patch('/evidence/:id', async (c) => {
+  const user = c.get('user');
+  const ev = await getEvidence(c.env.DB, c.req.param('id'));
+  if (!ev || ev.deleted_at || !canRead(user, ev.branch_id)) return c.json({ error: 'not_found' }, 404);
+  if (!hasRole(user, WRITER_ROLES, ev.branch_id)) return c.json({ error: 'forbidden_branch' }, 403);
+  const body = await c.req
+    .json<{
+      title?: string;
+      valid_until?: string | null;
+      contains_pii?: boolean;
+      relink?: { requirement_id?: string; from_criterion_id?: string | null; to_criterion_id?: string | null };
+    }>()
+    .catch(() => null);
+  if (!body) return c.json({ error: 'invalid_json' }, 400);
+
+  const after: EvidenceRow = { ...ev };
+  if (body.title !== undefined) {
+    const t = String(body.title).trim();
+    if (!t || t.length > 200) return c.json({ error: 'invalid_title' }, 400);
+    after.title = t;
+  }
+  if (body.valid_until !== undefined) {
+    if (body.valid_until !== null && !isIsoDate(body.valid_until)) return c.json({ error: 'invalid_valid_until' }, 400);
+    after.valid_until = body.valid_until;
+    // ระยะเก็บรักษาขยายตามวันหมดอายุใหม่ได้ แต่ไม่หดสั้นลง (ข้อ 9, 13)
+    const today = todayBangkok();
+    const base = after.valid_until && after.valid_until > today ? after.valid_until : today;
+    const wanted = addYears(base, RETAIN_YEARS);
+    if (!after.retain_until || wanted > after.retain_until) after.retain_until = wanted;
+  }
+  if (body.contains_pii !== undefined) {
+    const pii = body.contains_pii ? 1 : 0;
+    // เอาธงข้อมูลส่วนบุคคลออกได้เฉพาะผู้ที่เปิดไฟล์ PII ได้ (QM / LAB_HEAD)
+    if (ev.contains_pii && !pii && !hasRole(user, PII_ROLES, ev.branch_id)) return c.json({ error: 'pii_unflag_restricted' }, 403);
+    after.contains_pii = pii;
+  }
+
+  const stmts: D1PreparedStatement[] = [];
+  const audit = c.get('audit');
+  if (body.relink) {
+    const { requirement_id: reqId, from_criterion_id, to_criterion_id } = body.relink;
+    const from = from_criterion_id || null;
+    const to = to_criterion_id || null;
+    if (!reqId) return c.json({ error: 'requirement_id_required' }, 400);
+    if (from !== to) {
+      const exists = (crit: string | null) =>
+        c.env.DB.prepare('SELECT 1 FROM evidence_links WHERE evidence_id = ? AND requirement_id = ? AND criterion_id IS ?').bind(ev.id, reqId, crit).first();
+      if (!(await exists(from))) return c.json({ error: 'link_not_found' }, 404);
+      if (!(await checkLinkTarget(c.env.DB, reqId, to))) return c.json({ error: 'requirement_or_criterion_not_found' }, 422);
+      if (await exists(to)) return c.json({ error: 'link_exists' }, 409);
+      stmts.push(
+        c.env.DB.prepare('UPDATE evidence_links SET criterion_id = ? WHERE evidence_id = ? AND requirement_id = ? AND criterion_id IS ?').bind(to, ev.id, reqId, from),
+        audit.stmt('UPDATE', 'evidence_links', `${ev.id}:${reqId}`, { criterion_id: from }, { criterion_id: to }),
+      );
+    }
+  }
+
+  const changed = (['title', 'valid_until', 'retain_until', 'contains_pii'] as const).some((k) => after[k] !== ev[k]);
+  if (changed) {
+    stmts.unshift(
+      c.env.DB.prepare('UPDATE evidence SET title = ?, valid_until = ?, retain_until = ?, contains_pii = ? WHERE id = ? AND deleted_at IS NULL')
+        .bind(after.title, after.valid_until, after.retain_until, after.contains_pii, ev.id),
+      audit.stmt('UPDATE', 'evidence', ev.id, ev, after),
+    );
+  }
+  if (stmts.length === 0) return c.json({ error: 'no_changes' }, 400);
+  await c.env.DB.batch(stmts);
+  return c.json({ evidence: { ...after, contains_pii: !!after.contains_pii } });
+});
+
 /** DELETE /evidence/:id — soft delete เท่านั้น ไฟล์ใน R2 ยังอยู่จนถึง retain_until */
 evidence.delete('/evidence/:id', async (c) => {
   const user = c.get('user');
